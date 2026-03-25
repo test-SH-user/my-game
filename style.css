@@ -6,16 +6,83 @@
 
 body {
   background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
   overflow: hidden;
   cursor: default;
+  touch-action: none;
+}
+
+#game-wrapper {
+  position: fixed;
+  transform-origin: top left;
 }
 
 canvas {
   display: block;
   border: 1px solid #1a1a3e;
   box-shadow: 0 0 40px rgba(100, 100, 255, 0.2);
+}
+
+/* Touch controls — hidden by default, shown only on touch screens */
+#touch-controls {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 28px;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+
+@media (pointer: coarse) {
+  #touch-controls {
+    display: flex;
+  }
+}
+
+#dpad {
+  display: flex;
+  gap: 16px;
+  pointer-events: auto;
+}
+
+#dpad button,
+#btn-fire {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  pointer-events: auto;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#dpad button:active {
+  background: rgba(79, 195, 247, 0.3);
+  border-color: rgba(79, 195, 247, 0.7);
+}
+
+#btn-fire {
+  width: 88px;
+  height: 88px;
+  border-color: rgba(255, 213, 79, 0.45);
+  background: rgba(255, 180, 0, 0.12);
+  color: #ffd54f;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+#btn-fire:active {
+  background: rgba(255, 180, 0, 0.3);
+  border-color: rgba(255, 213, 79, 0.8);
 }

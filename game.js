@@ -4,6 +4,22 @@ const ctx = canvas.getContext('2d');
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
 
+// --- Responsive scaling ---
+const TOUCH_CONTROLS_H = 112; // 80px button + 2×16px padding
+const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+const wrapper = document.getElementById('game-wrapper');
+
+function resizeGame() {
+  const availW = window.innerWidth;
+  const availH = window.innerHeight - (isTouchDevice ? TOUCH_CONTROLS_H : 0);
+  const scale = Math.min(availW / WIDTH, availH / HEIGHT);
+  const scaledW = WIDTH * scale;
+  const scaledH = HEIGHT * scale;
+  wrapper.style.transform = `scale(${scale})`;
+  wrapper.style.left = Math.floor((availW - scaledW) / 2) + 'px';
+  wrapper.style.top = Math.floor((availH - scaledH) / 2) + 'px';
+}
+
 // --- Constants ---
 const PLAYER_SPEED = 5;
 const BULLET_SPEED = 8;
@@ -276,11 +292,15 @@ function drawStartScreen() {
 
   ctx.fillStyle = '#ffffff';
   ctx.font = '22px monospace';
-  ctx.fillText('Press Space to Start', WIDTH / 2, HEIGHT / 2);
+  ctx.fillText(isTouchDevice ? 'Tap to Start' : 'Press Space to Start', WIDTH / 2, HEIGHT / 2);
 
   ctx.fillStyle = '#90a4ae';
   ctx.font = '16px monospace';
-  ctx.fillText('Arrow Keys to move   |   Space to fire', WIDTH / 2, HEIGHT / 2 + 50);
+  if (isTouchDevice) {
+    ctx.fillText('D-Pad to move   |   FIRE button to shoot', WIDTH / 2, HEIGHT / 2 + 50);
+  } else {
+    ctx.fillText('Arrow Keys to move   |   Space to fire', WIDTH / 2, HEIGHT / 2 + 50);
+  }
 }
 
 function drawGameOverScreen() {
@@ -300,7 +320,7 @@ function drawGameOverScreen() {
   ctx.fillText(`Best: ${highScore}`, WIDTH / 2, HEIGHT / 2 + 36);
 
   ctx.fillStyle = '#90a4ae';
-  ctx.fillText('Press Space to Restart', WIDTH / 2, HEIGHT / 2 + 72);
+  ctx.fillText(isTouchDevice ? 'Tap to Restart' : 'Press Space to Restart', WIDTH / 2, HEIGHT / 2 + 72);
 }
 
 // --- Main loop ---
@@ -352,6 +372,44 @@ document.addEventListener('keyup', e => {
   if (e.code === 'Space') spaceWasDown = false;
 });
 
+// --- Touch controls ---
+function setupTouchControls() {
+  if (!isTouchDevice) return;
+
+  function bindMoveBtn(id, keyCode) {
+    const el = document.getElementById(id);
+    el.addEventListener('touchstart', e => { e.preventDefault(); keys[keyCode] = true; }, { passive: false });
+    el.addEventListener('touchend', e => { e.preventDefault(); keys[keyCode] = false; }, { passive: false });
+    el.addEventListener('touchcancel', e => { e.preventDefault(); keys[keyCode] = false; }, { passive: false });
+  }
+
+  bindMoveBtn('btn-left', 'ArrowLeft');
+  bindMoveBtn('btn-right', 'ArrowRight');
+
+  const btnFire = document.getElementById('btn-fire');
+  btnFire.addEventListener('touchstart', e => {
+    e.preventDefault();
+    if (gameState === 'start') {
+      startGame();
+    } else if (gameState === 'gameover') {
+      gameState = 'start';
+    } else {
+      keys.Space = true;
+    }
+  }, { passive: false });
+  btnFire.addEventListener('touchend', e => { e.preventDefault(); keys.Space = false; }, { passive: false });
+  btnFire.addEventListener('touchcancel', e => { e.preventDefault(); keys.Space = false; }, { passive: false });
+
+  // Tap the canvas to start / restart
+  canvas.addEventListener('touchstart', () => {
+    if (gameState === 'start') startGame();
+    else if (gameState === 'gameover') gameState = 'start';
+  }, { passive: true });
+}
+
 // --- Boot ---
 generateStars();
+resizeGame();
+window.addEventListener('resize', resizeGame);
+setupTouchControls();
 requestAnimationFrame(loop);

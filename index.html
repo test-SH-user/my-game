@@ -2,12 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Space Shooter</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <div id="game-wrapper">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+  </div>
+  <div id="touch-controls">
+    <div id="dpad">
+      <button id="btn-left" aria-label="Move left">&#9664;</button>
+      <button id="btn-right" aria-label="Move right">&#9654;</button>
+    </div>
+    <button id="btn-fire" aria-label="Fire">FIRE</button>
+  </div>
   <script src="game.js"></script>
 </body>
 </html>

@@ -30,6 +30,7 @@ let player = {};
 let bullets = [];
 let enemies = [];
 let stars = [];
+let particles = [];
 
 // --- Stars (generated once) ---
 function generateStars() {
@@ -61,6 +62,7 @@ function startGame() {
   lastBulletTime = 0;
   bullets = [];
   enemies = [];
+  particles = [];
   initPlayer();
   clearInterval(spawnInterval);
   spawnInterval = setInterval(spawnEnemy, ENEMY_SPAWN_INTERVAL);
@@ -76,6 +78,23 @@ function spawnEnemy() {
     height: 30,
     speed: enemySpeed,
   });
+}
+
+function spawnParticles(cx, cy) {
+  const colors = ['#ef5350', '#ff8a80', '#ff9800', '#fff176'];
+  for (let i = 0; i < 18; i++) {
+    const angle = (Math.PI * 2 * i) / 18 + (Math.random() - 0.5) * 0.4;
+    const speed = Math.random() * 3 + 1;
+    particles.push({
+      x: cx,
+      y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      alpha: 1,
+      radius: Math.random() * 3 + 1,
+      color: colors[Math.floor(Math.random() * colors.length)],
+    });
+  }
 }
 
 // --- Update ---
@@ -116,6 +135,7 @@ function update(now) {
       ) {
         remainingBullets.delete(b);
         remainingEnemies.delete(e);
+        spawnParticles(e.x + e.width / 2, e.y + e.height / 2);
         score++;
         kills++;
         // Increase difficulty every N kills
@@ -129,6 +149,14 @@ function update(now) {
 
   bullets = [...remainingBullets];
   enemies = [...remainingEnemies];
+
+  // Update particles
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.alpha -= 0.03;
+  });
+  particles = particles.filter(p => p.alpha > 0);
 
   // Enemy reaches bottom -> game over
   for (const e of enemies) {
@@ -207,6 +235,17 @@ function drawBullet(b) {
   ctx.shadowBlur = 0;
 }
 
+function drawParticles() {
+  particles.forEach(p => {
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
 function drawHUD() {
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 20px monospace';
@@ -266,6 +305,7 @@ function loop(now) {
   } else if (gameState === 'playing') {
     update(now);
     enemies.forEach(drawEnemy);
+    drawParticles();
     drawPlayer();
     bullets.forEach(drawBullet);
     drawHUD();

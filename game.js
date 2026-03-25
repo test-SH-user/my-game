@@ -17,6 +17,7 @@ const DIFFICULTY_STEP = 10; // kills before speed increases
 let gameState = 'start'; // 'start' | 'playing' | 'gameover'
 let score = 0;
 let kills = 0;
+let highScore = parseInt(localStorage.getItem('highScore') || '0', 10);
 let enemySpeed = ENEMY_BASE_SPEED;
 let lastBulletTime = 0;
 let spawnInterval = null;
@@ -162,6 +163,10 @@ function update(now) {
   for (const e of enemies) {
     if (e.y + e.height >= HEIGHT) {
       clearInterval(spawnInterval);
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('highScore', highScore);
+      }
       gameState = 'gameover';
       return;
     }
@@ -247,10 +252,13 @@ function drawParticles() {
 }
 
 function drawHUD() {
-  ctx.fillStyle = '#fff';
   ctx.font = 'bold 20px monospace';
   ctx.textAlign = 'left';
+  ctx.fillStyle = '#fff';
   ctx.fillText(`Score: ${score}`, 16, 30);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#90a4ae';
+  ctx.fillText(`Best: ${highScore}`, WIDTH - 16, 30);
 }
 
 function drawOverlay(alpha) {
@@ -287,9 +295,12 @@ function drawGameOverScreen() {
   ctx.font = '28px monospace';
   ctx.fillText(`Score: ${score}`, WIDTH / 2, HEIGHT / 2);
 
-  ctx.fillStyle = '#90a4ae';
+  ctx.fillStyle = score >= highScore ? '#ffd54f' : '#90a4ae';
   ctx.font = '20px monospace';
-  ctx.fillText('Press Space to Restart', WIDTH / 2, HEIGHT / 2 + 60);
+  ctx.fillText(`Best: ${highScore}`, WIDTH / 2, HEIGHT / 2 + 36);
+
+  ctx.fillStyle = '#90a4ae';
+  ctx.fillText('Press Space to Restart', WIDTH / 2, HEIGHT / 2 + 72);
 }
 
 // --- Main loop ---
